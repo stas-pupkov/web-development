@@ -4,6 +4,7 @@ import com.grid.webdevelopment.exception.UserNotExistsException;
 import com.grid.webdevelopment.model.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.annotation.SessionScope;
 
 import java.util.List;
 import java.util.Map;
