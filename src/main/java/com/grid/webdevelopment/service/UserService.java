@@ -1,6 +1,7 @@
 package com.grid.webdevelopment.service;
 
 import com.grid.webdevelopment.config.CryptPasswordEncoder;
+import com.grid.webdevelopment.exception.UserNotFoundException;
 import com.grid.webdevelopment.model.AccessRequest;
 import com.grid.webdevelopment.model.User;
 import com.grid.webdevelopment.repository.UserRepository;
@@ -23,6 +24,7 @@ public class UserService {
     private UserRepository userRepository;
     private CryptPasswordEncoder passwordEncoder;
 
+    //todo fix
     public Map<String, String> create(AccessRequest accessRequest) {
         String email = accessRequest.getEmail();
         String password = passwordEncoder.getPasswordEncoder().encode(accessRequest.getPassword());
@@ -35,7 +37,8 @@ public class UserService {
     }
 
     public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found2"));
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(String.format("User with email %s not found", email)));
     }
 
     public List<User> getUsers() {

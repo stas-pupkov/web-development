@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -19,5 +20,7 @@ public class User {
     @NotEmpty private String password;
     private Status status;
     private Role role;
+    private int failedAttempts;
+    private long finishLocking;
 
 }
