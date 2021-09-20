@@ -11,6 +11,9 @@ import com.grid.webdevelopment.model.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -27,11 +30,12 @@ public class AuthService {
 
     private final UserService userService;
     private final CryptPasswordEncoder passwordEncoder;
+    private final SessionRegistry sessionRegistry;
 
     public SessionResponse loginUser(AccessRequest accessRequest) {
         String email = accessRequest.getEmail();
 
-        User user = userService.getUserByEmail(accessRequest.getEmail());
+        User user = userService.getUserByEmail(email);
         checkLocked(user);
         checkFailedAttempts(user);
 
@@ -52,6 +56,18 @@ public class AuthService {
             user.setFailedAttempts(user.getFailedAttempts() + 1);
             throw new AuthenticationException(String.format("Wrong password for user %s", email));
         }
+    }
+
+    public User resetPassword(AccessRequest accessRequest) {
+        String email = accessRequest.getEmail();
+        User user = userService.getUserByEmail(email);
+        String newPassword = passwordEncoder.getPasswordEncoder().encode(accessRequest.getPassword());
+
+        expireUserSessions(email);
+
+        user.setPassword(newPassword);
+        userService.saveUser(user);
+        return user;
     }
 
     protected boolean comparePasswords(String rawPassword, String encodedPassword) {
@@ -78,7 +94,14 @@ public class AuthService {
         }
     }
 
-
+    public void expireUserSessions(String username) {
+        sessionRegistry.getAllPrincipals().stream()
+                .filter(principal -> principal instanceof org.springframework.security.core.userdetails.User)
+                .map(userDetails -> (UserDetails) userDetails)
+                .filter(userDetails -> userDetails.getUsername().equals(username))
+                .map(userDetails -> (SessionInformation) sessionRegistry.getAllSessions(userDetails, true))
+                .forEach(information -> information.expireNow());
+    }
 
 
 

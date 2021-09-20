@@ -1,39 +1,42 @@
 package com.grid.webdevelopment.service;
 
 import com.grid.webdevelopment.config.CryptPasswordEncoder;
+import com.grid.webdevelopment.exception.UserExistsException;
 import com.grid.webdevelopment.exception.UserNotFoundException;
 import com.grid.webdevelopment.model.AccessRequest;
+import com.grid.webdevelopment.model.Role;
+import com.grid.webdevelopment.model.Status;
 import com.grid.webdevelopment.model.User;
 import com.grid.webdevelopment.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Service
 @AllArgsConstructor
 public class UserService {
 
-    private SessionRegistry sessionRegistry;
     private UserRepository userRepository;
     private CryptPasswordEncoder passwordEncoder;
 
-    //todo fix
-    public Map<String, String> create(AccessRequest accessRequest) {
+    public User createUser(AccessRequest accessRequest) {
         String email = accessRequest.getEmail();
-        String password = passwordEncoder.getPasswordEncoder().encode(accessRequest.getPassword());
         if (userRepository.userExists(email)) {
-            throw new UsernameNotFoundException("User with such email exists already");
+            throw new UserExistsException(String.format("User with email=%s exists already", email));
         }
-        User user = User.builder().email(email).password(password).build();
+
+        String encodePassword = passwordEncoder.getPasswordEncoder().encode(accessRequest.getPassword());
+        User user = createNewUser(email, encodePassword);
         userRepository.save(user);
-        return Collections.singletonMap("id", user.getUserId());
+        log.info("User with email={} has been saved", email);
+
+        return user;
     }
 
     public User getUserByEmail(String email) {
@@ -41,13 +44,29 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(String.format("User with email %s not found", email)));
     }
 
-    public List<User> getUsers() {
+    public List<User> getAllUsers() {
         return userRepository.findAllUsers();
     }
 
-    public String delete(String id) {
+    public String deleteUserById(String id) {
         userRepository.deleteById(id);
         return "Successfully deleted";
+    }
+
+    public void saveUser(User user) {
+        userRepository.save(user);
+    }
+
+    protected User createNewUser(String email, String password) {
+        return User.builder()
+                .userId(UUID.randomUUID().toString())
+                .email(email)
+                .password(password)
+                .status(Status.ACTIVE)
+                .role(Role.USER)
+                .failedAttempts(0)
+                .finishLocking(0)
+                .build();
     }
 
 

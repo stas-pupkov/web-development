@@ -2,6 +2,7 @@ package com.grid.webdevelopment.controller;
 
 import com.grid.webdevelopment.model.AccessRequest;
 import com.grid.webdevelopment.model.SessionResponse;
+import com.grid.webdevelopment.model.User;
 import com.grid.webdevelopment.service.AuthService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,11 @@ public class AuthController {
         SecurityContextLogoutHandler handler = new SecurityContextLogoutHandler();
         handler.logout(request, response, null);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("reset")
+    public ResponseEntity<User> reset(@RequestBody AccessRequest accessRequest) {
+        return ResponseEntity.ok(authService.resetPassword(accessRequest));
     }
 
 }
