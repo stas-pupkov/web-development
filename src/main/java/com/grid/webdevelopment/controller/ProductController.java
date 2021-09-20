@@ -10,7 +10,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/items/")
+@RequestMapping("/api/v1/product/")
 @RequiredArgsConstructor
 public class ProductController {
 
@@ -18,11 +18,12 @@ public class ProductController {
 
     @GetMapping("get")
     public ResponseEntity<List<Product>> getProducts() {
-        return ResponseEntity.ok(productService.getItems());
+        return ResponseEntity.ok(productService.getAllProducts());
     }
 
     @PostMapping("save")
-    public ResponseEntity<String> saveProduct(@RequestBody @Valid Product product) {
-        return ResponseEntity.ok(productService.saveItem(product));
+    public ResponseEntity<?> saveProduct(@RequestBody @Valid Product product) {
+        productService.saveProduct(product);
+        return ResponseEntity.ok().build();
     }
 }

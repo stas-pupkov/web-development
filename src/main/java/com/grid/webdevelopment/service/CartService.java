@@ -25,12 +25,12 @@ public class CartService {
         boolean contains = cartRepository.getAll().keySet().contains(id);
         if (contains == true) return String.format("Product with id=%s is added already", id);
         int quantity = cartItem.getQuantity();
-        Product product = productService.getItem(id);
+        Product product = productService.getProductById(id);
         if (product == null) throw new ProductNotFoundException(String.format("Product with id=%s not found", id));
         if (product.getAvailable() >= quantity) {
             cartRepository.save(id, quantity);
             product.setAvailable(product.getAvailable() - quantity);
-            productService.saveItem(product);
+            productService.saveProduct(product);
             return "Success";
         } else {
             throw new BigQuantityException(String.format("Available quantity is %s, but requested %s", product.getAvailable(), quantity));
@@ -53,17 +53,17 @@ public class CartService {
         int quantityInCart = cartRepository.getQuantity(id);
         if (quantity >= quantityInCart) {
             cartRepository.delete(id, quantityInCart);
-            Product product = productService.getItem(id);
+            Product product = productService.getProductById(id);
             product.setAvailable(product.getAvailable() + quantityInCart);
-            productService.saveItem(product);
+            productService.saveProduct(product);
             return "Deleted fully";
         }
         else {
             int diff = quantityInCart - quantity;
             cartRepository.save(id, diff);
-            Product product = productService.getItem(id);
+            Product product = productService.getProductById(id);
             product.setAvailable(product.getAvailable() + diff);
-            productService.saveItem(product);
+            productService.saveProduct(product);
             return "Deleted partially";
         }
     }
@@ -73,23 +73,23 @@ public class CartService {
         int quantity = cartItem.getQuantity();
         boolean contains = cartRepository.getAll().keySet().contains(id);
         if (contains == false) throw new ProductNotFoundException(String.format("Product with id=%s not found", id));
-        int quantityInShop = productService.getItem(id).getAvailable();
+        int quantityInShop = productService.getProductById(id).getAvailable();
         if (quantityInShop < quantity) throw new BigQuantityException("Not enough items in shop");
 
         int quantityInCart = cartRepository.getQuantity(id);
         cartRepository.save(id, quantityInCart + quantity);
-        Product product = productService.getItem(id);
+        Product product = productService.getProductById(id);
         product.setAvailable(product.getAvailable() - quantity);
-        productService.saveItem(product);
+        productService.saveProduct(product);
         return "Modified";
     }
 
     private CartShow genCartShow(int orderNumber, String id) {
         return CartShow.builder()
             .orderNumber(orderNumber)
-            .productName(productService.getItem(id).getTitle())
+            .productName(productService.getProductById(id).getTitle())
             .quantities(cartRepository.getQuantity(id))
-            .subtotal(cartRepository.getQuantity(id) * Double.valueOf(productService.getItem(id).getPrice()))
+            .subtotal(cartRepository.getQuantity(id) * Double.valueOf(productService.getProductById(id).getPrice()))
             .build();
     }
 }

@@ -22,16 +22,12 @@ public class UserRepository {
         defaultUsers.getUsers().put(user.getUserId(), user);
     }
 
-    public List<User> findAllUsers() {
+    public List<User> findAll() {
         return defaultUsers.getUsers().values().stream().collect(Collectors.toList());
     }
 
     public void deleteById(String id) {
         defaultUsers.getUsers().keySet().removeIf(userId -> userId.equals(id));
-    }
-
-    public void deleteByEmail(String email) {
-        defaultUsers.getUsers().values().removeIf(user -> user.getEmail().equals(email));
     }
 
     public boolean userExists(String email) {

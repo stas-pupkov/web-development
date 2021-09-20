@@ -45,11 +45,12 @@ public class AuthService {
         boolean passwordsEqual = comparePasswords(rawPassword, encodedPassword);
 
         if (passwordsEqual) {
-            String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
-            user.setSessionId(sessionId);
             user.setStatus(Status.ACTIVE);
             user.setFailedAttempts(0);
             user.setFinishLocking(0);
+
+            String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
+            user.setSessionId(sessionId);
             log.info("User {} has got sessionId={}", email, sessionId);
             return SessionResponse.builder().sessionId(sessionId).build();
         } else {

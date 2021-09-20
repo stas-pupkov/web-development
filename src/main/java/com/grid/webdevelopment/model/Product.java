@@ -10,6 +10,6 @@ public class Product {
     private String id;
     private String title;
     private int available;
-    private String price;
+    private Double price;
 
 }

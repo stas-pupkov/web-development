@@ -26,8 +26,9 @@ public class UserController {
 
     @DeleteMapping("delete/{id}")
     @PreAuthorize("hasAuthority('users:write')")
-    public ResponseEntity<String> deleteUser(@PathVariable String id) {
-        return ResponseEntity.ok(userService.deleteUserById(id));
+    public ResponseEntity<?> deleteUser(@PathVariable String id) {
+        userService.deleteUserById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("users")

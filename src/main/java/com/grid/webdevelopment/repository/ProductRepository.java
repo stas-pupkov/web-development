@@ -4,25 +4,30 @@ import com.grid.webdevelopment.model.Product;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class ProductRepository {
 
-    private static HashMap<String, Product> items = new HashMap<>();
+    private final DefaultProducts products;
 
     public void save(Product product) {
-        items.put(product.getId(), product);
+        products.getProducts().put(product.getId(), product);
     }
 
-    public Product get(String id) {
-        return items.get(id);
+    public Optional<Product> findById(String id) {
+        return products.getProducts().values().stream().filter(product -> product.getId().equals(id)).findFirst();
     }
 
-    public List<Product> getAll() {
-        return items.entrySet().stream().map(item -> item.getValue()).collect(Collectors.toList());
+    public List<Product> findAll() {
+        return products.getProducts().entrySet().stream().map(item -> item.getValue()).collect(Collectors.toList());
+    }
+
+    public boolean productExists(String id) {
+        return products.getProducts().values().stream().filter(product -> product.getId().equals(id)).count() == 1;
     }
 
 }

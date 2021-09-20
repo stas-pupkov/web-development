@@ -12,9 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -34,7 +32,6 @@ public class UserService {
         String encodePassword = passwordEncoder.getPasswordEncoder().encode(accessRequest.getPassword());
         User user = createNewUser(email, encodePassword);
         userRepository.save(user);
-        log.info("User with email={} has been saved", email);
 
         return user;
     }
@@ -45,16 +42,17 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
-        return userRepository.findAllUsers();
+        return userRepository.findAll();
     }
 
-    public String deleteUserById(String id) {
+    public void deleteUserById(String id) {
         userRepository.deleteById(id);
-        return "Successfully deleted";
+        log.info("User with id={} has been deleted", id);
     }
 
     public void saveUser(User user) {
         userRepository.save(user);
+        log.info("User with id={} has been saved", user.getUserId());
     }
 
     protected User createNewUser(String email, String password) {
