@@ -1,15 +1,17 @@
 package com.grid.webdevelopment.service;
 
 import com.grid.webdevelopment.exception.BigQuantityException;
+import com.grid.webdevelopment.exception.ProductAddedAlreadyException;
 import com.grid.webdevelopment.exception.ProductNotFoundException;
 import com.grid.webdevelopment.model.CartItem;
-import com.grid.webdevelopment.model.CartShow;
+import com.grid.webdevelopment.model.CartOrder;
 import com.grid.webdevelopment.model.Product;
-import com.grid.webdevelopment.repository.CartRepository;
+import com.grid.webdevelopment.model.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -17,79 +19,103 @@ import java.util.stream.IntStream;
 @AllArgsConstructor
 public class CartService {
 
-    private CartRepository cartRepository;
-    private ProductService productService;
+    private final ProductService productService;
+    private final UserService userService;
 
-    public String addToCart(CartItem cartItem) {
-        String id = cartItem.getId();
-        boolean contains = cartRepository.getAll().keySet().contains(id);
-        if (contains == true) return String.format("Product with id=%s is added already", id);
+    protected boolean productExistsInCart(User user, String productId) {
+        return user.getCart().keySet().contains(productId);
+    }
+
+    public Map<String, Integer> addToCart(String userId, CartItem cartItem) {
+        User user = userService.getUserById(userId);
+
+        String productId = cartItem.getId();
+        if (productExistsInCart(user, productId)) {
+            throw new ProductAddedAlreadyException(String.format("Product with id=%s is added already", productId));
+        }
+
         int quantity = cartItem.getQuantity();
-        Product product = productService.getProductById(id);
-        if (product == null) throw new ProductNotFoundException(String.format("Product with id=%s not found", id));
+        Product product = productService.getProductById(productId);
         if (product.getAvailable() >= quantity) {
-            cartRepository.save(id, quantity);
+            user.getCart().put(productId, quantity);
             product.setAvailable(product.getAvailable() - quantity);
+            userService.saveUser(user);
             productService.saveProduct(product);
-            return "Success";
+            return user.getCart();
         } else {
             throw new BigQuantityException(String.format("Available quantity is %s, but requested %s", product.getAvailable(), quantity));
         }
     }
 
-    public List<CartShow> displayCart() {
-        List<String> ids = cartRepository.getAll().keySet().stream().collect(Collectors.toList());
+    public Map<String, Integer> deleteItem(String userId, CartItem cartItem) {
+        User user = userService.getUserById(userId);
 
-        List<CartShow> collect = IntStream.range(0, ids.size())
-                .mapToObj(i -> genCartShow(i + 1, ids.get(i)))
+        String productId = cartItem.getId();
+
+        user.getCart().keySet().stream()
+                .filter(id -> id.equals(productId))
+                .findFirst()
+                .orElseThrow(() -> new ProductNotFoundException(String.format("Product with id=%s not found in cart", productId)));
+
+        int quantity = cartItem.getQuantity();
+        int quantityInCart = user.getCart().get(productId);
+        if (quantity >= quantityInCart) {
+            user.getCart().remove(productId);
+            Product product = productService.getProductById(productId);
+            product.setAvailable(product.getAvailable() + quantityInCart);
+            userService.saveUser(user);
+            productService.saveProduct(product);
+            return user.getCart();
+        }
+        else {
+            int diff = quantityInCart - quantity;
+            user.getCart().put(productId, diff);
+            Product product = productService.getProductById(productId);
+            product.setAvailable(product.getAvailable() + diff);
+            userService.saveUser(user);
+            productService.saveProduct(product);
+            return user.getCart();
+        }
+    }
+
+    public Map<String, Integer> modifyItemInCart(String userId, CartItem cartItem) {
+        User user = userService.getUserById(userId);
+
+        String productId = cartItem.getId();
+        int quantity = cartItem.getQuantity();
+        if (!productExistsInCart(user, productId)) throw new ProductNotFoundException(String.format("Product with id=%s not found in cart", productId));
+
+        int quantityInShop = productService.getProductById(productId).getAvailable();
+        if (quantityInShop < quantity) throw new BigQuantityException("Not enough items in shop");
+
+        int quantityInCart = user.getCart().get(productId);
+        user.getCart().put(productId, quantityInCart + quantity);
+        Product product = productService.getProductById(productId);
+        product.setAvailable(product.getAvailable() - quantity);
+        userService.saveUser(user);
+        productService.saveProduct(product);
+        return user.getCart();
+    }
+
+    public List<CartOrder> displayCart(String userId) {
+        List<String> ids = userService.getUserById(userId).getCart().keySet().stream().collect(Collectors.toList());
+
+        List<CartOrder> collect = IntStream.range(0, ids.size())
+                .mapToObj(i -> genCartOrder(userId, i + 1, ids.get(i)))
                 .collect(Collectors.toList());
 
         return collect;
     }
 
-    public String deleteItem(CartItem cartItem) {
-        String id = cartItem.getId();
-        int quantity = cartItem.getQuantity();
-        int quantityInCart = cartRepository.getQuantity(id);
-        if (quantity >= quantityInCart) {
-            cartRepository.delete(id, quantityInCart);
-            Product product = productService.getProductById(id);
-            product.setAvailable(product.getAvailable() + quantityInCart);
-            productService.saveProduct(product);
-            return "Deleted fully";
-        }
-        else {
-            int diff = quantityInCart - quantity;
-            cartRepository.save(id, diff);
-            Product product = productService.getProductById(id);
-            product.setAvailable(product.getAvailable() + diff);
-            productService.saveProduct(product);
-            return "Deleted partially";
-        }
+    private CartOrder genCartOrder(String userId, int orderNumber, String productId) {
+        Map<String, Integer> cart = userService.getUserById(userId).getCart();
+        return CartOrder.builder()
+                .orderNumber(orderNumber)
+                .productId(productService.getProductById(productId).getId())
+                .productName(productService.getProductById(productId).getTitle())
+                .quantities(cart.get(productId))
+                .subtotal(cart.get(productId) * Double.valueOf(productService.getProductById(productId).getPrice()))
+                .build();
     }
 
-    public String modifyItemInCart(CartItem cartItem) {
-        String id = cartItem.getId();
-        int quantity = cartItem.getQuantity();
-        boolean contains = cartRepository.getAll().keySet().contains(id);
-        if (contains == false) throw new ProductNotFoundException(String.format("Product with id=%s not found", id));
-        int quantityInShop = productService.getProductById(id).getAvailable();
-        if (quantityInShop < quantity) throw new BigQuantityException("Not enough items in shop");
-
-        int quantityInCart = cartRepository.getQuantity(id);
-        cartRepository.save(id, quantityInCart + quantity);
-        Product product = productService.getProductById(id);
-        product.setAvailable(product.getAvailable() - quantity);
-        productService.saveProduct(product);
-        return "Modified";
-    }
-
-    private CartShow genCartShow(int orderNumber, String id) {
-        return CartShow.builder()
-            .orderNumber(orderNumber)
-            .productName(productService.getProductById(id).getTitle())
-            .quantities(cartRepository.getQuantity(id))
-            .subtotal(cartRepository.getQuantity(id) * Double.valueOf(productService.getProductById(id).getPrice()))
-            .build();
-    }
 }

@@ -1,39 +1,43 @@
 package com.grid.webdevelopment.controller;
 
 import com.grid.webdevelopment.model.CartItem;
-import com.grid.webdevelopment.model.CartShow;
+import com.grid.webdevelopment.model.CartOrder;
 import com.grid.webdevelopment.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/cart/")
+@RequestMapping("/api/v1/cart/")
 @RequiredArgsConstructor
 public class CartController {
 
     private final CartService cartService;
 
-    @PostMapping("add")
-    public ResponseEntity<String> addToCart(@RequestBody CartItem cartItem) {
-        return ResponseEntity.ok(cartService.addToCart(cartItem));
+    @PostMapping("add/{userId}")
+    public ResponseEntity<Map<String, Integer>> addToCart(@PathVariable String userId,
+                                                          @RequestBody CartItem cartItem) {
+        return ResponseEntity.ok(cartService.addToCart(userId, cartItem));
     }
 
-    @GetMapping("get")
-    public ResponseEntity<List<CartShow>> display() {
-        return ResponseEntity.ok(cartService.displayCart());
+    @GetMapping("get/{userId}")
+    public ResponseEntity<List<CartOrder>> display(@PathVariable String userId) {
+        return ResponseEntity.ok(cartService.displayCart(userId));
     }
 
-    @PostMapping("delete")
-    public ResponseEntity<String> delete(@RequestBody CartItem cartItem) {
-        return  ResponseEntity.ok(cartService.deleteItem(cartItem));
+    @PostMapping("delete/{userId}")
+    public ResponseEntity<Map<String, Integer>> delete(@PathVariable String userId,
+                                                       @RequestBody CartItem cartItem) {
+        return ResponseEntity.ok(cartService.deleteItem(userId, cartItem));
     }
 
-    @PostMapping("modify")
-    public ResponseEntity<String> modify(@RequestBody CartItem cartItem) {
-        return  ResponseEntity.ok(cartService.modifyItemInCart(cartItem));
+    @PostMapping("modify/{userId}")
+    public ResponseEntity<Map<String, Integer>> modify(@PathVariable String userId,
+                                                       @RequestBody CartItem cartItem) {
+        return ResponseEntity.ok(cartService.modifyItemInCart(userId, cartItem));
     }
 
 }

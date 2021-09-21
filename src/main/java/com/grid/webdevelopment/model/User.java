@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
-import java.time.Instant;
+import java.util.Map;
 
 @Data
 @Builder
@@ -22,5 +22,6 @@ public class User {
     private Role role;
     private int failedAttempts;
     private long finishLocking;
+    private Map<String, Integer> cart;
 
 }

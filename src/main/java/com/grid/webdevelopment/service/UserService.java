@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +39,12 @@ public class UserService {
 
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(String.format("User with email %s not found", email)));
+                .orElseThrow(() -> new UserNotFoundException(String.format("User with email=%s not found", email)));
+    }
+
+    public User getUserById(String id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(String.format("User with id=%s not found", id)));
     }
 
     public List<User> getAllUsers() {
@@ -52,7 +58,7 @@ public class UserService {
 
     public void saveUser(User user) {
         userRepository.save(user);
-        log.info("User with id={} has been saved", user.getUserId());
+        log.info("User with id={} has been saved/updated", user.getUserId());
     }
 
     protected User createNewUser(String email, String password) {
@@ -64,6 +70,7 @@ public class UserService {
                 .role(Role.USER)
                 .failedAttempts(0)
                 .finishLocking(0)
+                .cart(new HashMap<>())
                 .build();
     }
 

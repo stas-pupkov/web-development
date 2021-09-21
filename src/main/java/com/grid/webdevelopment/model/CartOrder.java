@@ -5,10 +5,12 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CartShow {
+public class CartOrder {
 
     private int orderNumber;
+    private String productId;
     private String productName;
     private int quantities;
     private Double subtotal;
+
 }

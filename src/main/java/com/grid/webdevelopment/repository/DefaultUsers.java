@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -40,6 +41,7 @@ public class DefaultUsers {
                 .password(adminPassword)
                 .role(Role.ADMIN)
                 .status(Status.ACTIVE)
+                .cart(new HashMap<>())
                 .build();
     }
 

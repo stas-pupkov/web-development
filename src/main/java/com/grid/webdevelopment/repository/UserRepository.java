@@ -18,6 +18,10 @@ public class UserRepository {
         return defaultUsers.getUsers().values().stream().filter(user -> user.getEmail().equals(email)).findFirst();
     }
 
+    public Optional<User> findById(String id) {
+        return defaultUsers.getUsers().values().stream().filter(user -> user.getUserId().equals(id)).findFirst();
+    }
+
     public void save(User user) {
         defaultUsers.getUsers().put(user.getUserId(), user);
     }
