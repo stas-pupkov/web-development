@@ -3,7 +3,6 @@ package com.grid.webdevelopment.service;
 import com.grid.webdevelopment.exception.BigQuantityException;
 import com.grid.webdevelopment.exception.ProductAddedAlreadyException;
 import com.grid.webdevelopment.exception.ProductNotFoundException;
-import com.grid.webdevelopment.model.Cart;
 import com.grid.webdevelopment.model.CartItem;
 import com.grid.webdevelopment.model.CartView;
 import com.grid.webdevelopment.model.Product;
@@ -12,8 +11,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -24,7 +25,7 @@ public class CartService {
     private final ProductService productService;
     private final CartItemsRepository cartItemsRepository;
 
-    public Cart addToCart(String userId, CartItem cartItem) {
+    public Map<String, Integer> addToCart(String userId, CartItem cartItem) {
         String productId = cartItem.getId();
         int quantity = cartItem.getQuantity();
 
@@ -55,7 +56,7 @@ public class CartService {
         log.info("ProductId={} has been updated in cartId={} in amount of {} pieces", userId, productId, quantity);
     }
 
-    public Cart deleteFromCart(String userId, CartItem cartItem) {
+    public Map<String, Integer> deleteFromCart(String userId, CartItem cartItem) {
         String productId = cartItem.getId();
         int quantity = cartItem.getQuantity();
 
@@ -94,7 +95,7 @@ public class CartService {
         log.info("{} has been updated on {} pieces", product, quantity);
     }
 
-    public Cart modifyItemInCart(String userId, CartItem cartItem) {
+    public Map<String, Integer> modifyItemInCart(String userId, CartItem cartItem) {
         String productId = cartItem.getId();
         int quantity = cartItem.getQuantity();
 
@@ -126,11 +127,20 @@ public class CartService {
     }
 
     protected Map<String, Integer> getUserItems(String userId) {
-        return cartItemsRepository.get(userId).getItems();
+        return cartItemsRepository.get(userId);
     }
 
     protected boolean productExistsInCart(String userId, String productId) {
         return getUserItems(userId).containsKey(productId);
+    }
+
+    public void returnAllProductsToShop(String userId) {
+        List<String> ids = getUserItems(userId).keySet().stream().collect(Collectors.toList());
+        ids.forEach(productId -> {
+            int quantity = getUserItems(userId).get(productId);
+            removeProductFromCart(userId, productId, quantity);
+            addProductToShop(productId, quantity);
+        });
     }
 
 
