@@ -3,16 +3,12 @@ package com.grid.webdevelopment.service;
 import com.grid.webdevelopment.config.CryptPasswordEncoder;
 import com.grid.webdevelopment.exception.UserExistsException;
 import com.grid.webdevelopment.exception.UserNotFoundException;
-import com.grid.webdevelopment.model.AccessRequest;
-import com.grid.webdevelopment.model.Role;
-import com.grid.webdevelopment.model.Status;
-import com.grid.webdevelopment.model.User;
+import com.grid.webdevelopment.model.*;
 import com.grid.webdevelopment.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -70,7 +66,7 @@ public class UserService {
                 .role(Role.USER)
                 .failedAttempts(0)
                 .finishLocking(0)
-                .cart(new HashMap<>())
+                .cart(new Cart())
                 .build();
     }
 

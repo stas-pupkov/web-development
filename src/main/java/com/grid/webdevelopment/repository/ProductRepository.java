@@ -18,16 +18,12 @@ public class ProductRepository {
         products.getProducts().put(product.getId(), product);
     }
 
-    public Optional<Product> findById(String id) {
-        return products.getProducts().values().stream().filter(product -> product.getId().equals(id)).findFirst();
+    public Optional<Product> findById(String productId) {
+        return products.getProducts().values().stream().filter(product -> product.getId().equals(productId)).findFirst();
     }
 
     public List<Product> findAll() {
         return products.getProducts().entrySet().stream().map(item -> item.getValue()).collect(Collectors.toList());
-    }
-
-    public boolean productExists(String id) {
-        return products.getProducts().values().stream().filter(product -> product.getId().equals(id)).count() == 1;
     }
 
 }

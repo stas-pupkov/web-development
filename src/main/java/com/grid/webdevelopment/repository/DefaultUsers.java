@@ -1,5 +1,6 @@
 package com.grid.webdevelopment.repository;
 
+import com.grid.webdevelopment.model.Cart;
 import com.grid.webdevelopment.model.Role;
 import com.grid.webdevelopment.model.Status;
 import com.grid.webdevelopment.model.User;
@@ -41,7 +42,7 @@ public class DefaultUsers {
                 .password(adminPassword)
                 .role(Role.ADMIN)
                 .status(Status.ACTIVE)
-                .cart(new HashMap<>())
+                .cart(new Cart())
                 .build();
     }
 

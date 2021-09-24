@@ -27,16 +27,6 @@ public class ProductService {
 
     public void saveProduct(Product product) {
         productRepository.save(product);
-
-//        if (productRepository.productExists(product.getId())) {
-//            Product productFromStore = getProductById(product.getId());
-//            productFromStore.setAvailable(productFromStore.getAvailable() + product.getAvailable());
-//            productRepository.save(productFromStore);
-//            log.info("{} has been updated", productFromStore);
-//            return;
-//        }
-//        productRepository.save(product);
-//        log.info("{} has been saved", product);
     }
 
 }

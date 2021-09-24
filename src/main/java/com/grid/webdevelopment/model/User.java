@@ -23,7 +23,6 @@ public class User {
     private Role role;
     private int failedAttempts;
     private long finishLocking;
-
-    private Map<String, Integer> cart;
+    private Cart cart;
 
 }

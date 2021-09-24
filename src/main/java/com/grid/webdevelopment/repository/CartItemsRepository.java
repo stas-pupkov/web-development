@@ -1,34 +1,30 @@
 package com.grid.webdevelopment.repository;
 
+import com.grid.webdevelopment.model.Cart;
+import com.grid.webdevelopment.service.UserService;
 import lombok.Data;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.annotation.SessionScope;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Data
 @Service
-@SessionScope
 public class CartItemsRepository {
 
-    // userId     productId quantity
-    Map<String, Map<String, Integer>> items = new HashMap<>();
+    private final UserService userService;
 
-    public void save(String userId, Map<String, Integer> item) {
-        items.put(userId, item);
+    public void save(String userId, String productId, int quantity) {
+        Cart userCart = userService.getUserById(userId).getCart();
+        userCart.getItems().put(productId, quantity);
+        userService.getUserById(userId).setCart(userCart);
     }
 
-    public Map<String, Integer> getItems(String userId) {
-        items.putIfAbsent(userId, new HashMap<>());
-        return items.get(userId);
+    public Cart get(String userId) {
+        return userService.getUserById(userId).getCart();
     }
 
-    public Integer getQuantity(String userId, String productId) {
-        return items.get(userId).get(productId);
+    public void delete(String userId, String productId) {
+        Cart userCart = userService.getUserById(userId).getCart();
+        userCart.getItems().remove(productId);
+        userService.getUserById(userId).setCart(userCart);
     }
 
-    public boolean delete(String userId, String productId, Integer quantity) {
-        return items.get(userId).remove(productId, quantity);
-    }
 }
