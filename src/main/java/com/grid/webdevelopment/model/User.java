@@ -1,13 +1,12 @@
 package com.grid.webdevelopment.model;
 
+import com.grid.webdevelopment.security.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.context.annotation.SessionScope;
 
 import javax.validation.constraints.NotEmpty;
-import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -20,7 +19,7 @@ public class User {
     @NotEmpty private String sessionId;
     @NotEmpty private String email;
     @NotEmpty private String password;
-    private Status status;
+    private UserStatus userStatus;
     private Role role;
     private int failedAttempts;
     private long finishLocking;

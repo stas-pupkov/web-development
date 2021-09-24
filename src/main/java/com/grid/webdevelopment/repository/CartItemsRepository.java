@@ -17,31 +17,14 @@ public class CartItemsRepository {
 
     private Map<String, Map<String, Integer>> items = new HashMap<>();
 
-//    public void save(String userId, String productId, int quantity) {
-//        Cart userCart = userService.getUserById(userId).getCart();
-//        userCart.getItems().put(productId, quantity);
-//        userService.getUserById(userId).setCart(userCart);
-//        items.put(productId, quantity);
-//    }
-
     public void save(String userId, String productId, int quantity) {
         get(userId).put(productId, quantity);
     }
-
-//    public Cart get(String userId) {
-//        return userService.getUserById(userId).getCart();
-//    }
 
     public Map<String, Integer> get(String userId) {
         items.putIfAbsent(userId, new HashMap<>());
         return items.get(userId);
     }
-
-//    public void delete(String userId, String productId) {
-//        Cart userCart = userService.getUserById(userId).getCart();
-//        userCart.getItems().remove(productId);
-//        userService.getUserById(userId).setCart(userCart);
-//    }
 
     public void delete(String userId, String productId) {
         get(userId).remove(productId);

@@ -3,13 +3,16 @@ package com.grid.webdevelopment.model;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 @Data
 @Builder
 public class Product {
 
-    private String id;
-    private String title;
-    private int available;
-    private Double price;
+    @NotBlank private String id;
+    @NotBlank private String title;
+    @NotNull private int available;
+    @NotNull private Double price;
 
 }

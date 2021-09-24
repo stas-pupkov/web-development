@@ -1,4 +1,4 @@
-package com.grid.webdevelopment.model;
+package com.grid.webdevelopment.security;
 
 import lombok.Getter;
 

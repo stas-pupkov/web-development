@@ -12,26 +12,26 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("create")
+    @PostMapping("/create")
     @PreAuthorize("hasAuthority('users:write')")
     public ResponseEntity<User> create(@RequestBody @Valid AccessRequest accessRequest) {
         return ResponseEntity.ok(userService.createUser(accessRequest));
     }
 
-    @DeleteMapping("delete/{id}")
+    @DeleteMapping("/delete/{userId}")
     @PreAuthorize("hasAuthority('users:write')")
-    public ResponseEntity<?> deleteUser(@PathVariable String id) {
-        userService.deleteUserById(id);
+    public ResponseEntity<?> deleteUser(@PathVariable String userId) {
+        userService.deleteUserById(userId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("users")
+    @GetMapping("/users")
     @PreAuthorize("hasAuthority('users:read')")
     public ResponseEntity<List<User>> getUsers() {
         return ResponseEntity.ok(userService.getAllUsers());

@@ -5,6 +5,7 @@ import com.grid.webdevelopment.exception.UserExistsException;
 import com.grid.webdevelopment.exception.UserNotFoundException;
 import com.grid.webdevelopment.model.*;
 import com.grid.webdevelopment.repository.UserRepository;
+import com.grid.webdevelopment.security.Role;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -63,13 +64,12 @@ public class UserService {
                 .userId(UUID.randomUUID().toString())
                 .email(email)
                 .password(password)
-                .status(Status.ACTIVE)
+                .userStatus(UserStatus.ACTIVE)
                 .role(Role.USER)
                 .failedAttempts(0)
                 .finishLocking(0)
                 .orders(new HashSet<>())
                 .build();
     }
-
 
 }

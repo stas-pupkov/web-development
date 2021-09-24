@@ -1,4 +1,4 @@
-package com.grid.webdevelopment.model;
+package com.grid.webdevelopment.security;
 
 import lombok.Getter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,7 +11,8 @@ public enum Role {
     ADMIN(Set.of(Permission.READ, Permission.WRITE)),
     USER(Set.of(Permission.READ));
 
-    @Getter private final Set<Permission> permissions;
+    @Getter
+    private final Set<Permission> permissions;
 
     Role(Set<Permission> permissions) {
         this.permissions = permissions;

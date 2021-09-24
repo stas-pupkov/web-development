@@ -19,11 +19,15 @@ public class ProductRepository {
     }
 
     public Optional<Product> findById(String productId) {
-        return products.getProducts().values().stream().filter(product -> product.getId().equals(productId)).findFirst();
+        return products.getProducts().values().stream()
+                .filter(product -> product.getId().equals(productId))
+                .findFirst();
     }
 
     public List<Product> findAll() {
-        return products.getProducts().entrySet().stream().map(item -> item.getValue()).collect(Collectors.toList());
+        return products.getProducts().entrySet().stream()
+                .map(item -> item.getValue())
+                .collect(Collectors.toList());
     }
 
 }

@@ -6,15 +6,13 @@ import com.grid.webdevelopment.exception.MaxAttemptsException;
 import com.grid.webdevelopment.exception.UserLockedException;
 import com.grid.webdevelopment.model.AccessRequest;
 import com.grid.webdevelopment.model.SessionResponse;
-import com.grid.webdevelopment.model.Status;
 import com.grid.webdevelopment.model.User;
+import com.grid.webdevelopment.model.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -34,29 +32,28 @@ public class AuthService {
 
     public SessionResponse loginUser(AccessRequest accessRequest) {
         String email = accessRequest.getEmail();
+        String rawPassword = accessRequest.getPassword();
 
         User user = userService.getUserByEmail(email);
-        checkLocked(user);
-        checkFailedAttempts(user);
+        verifyUserNotLocked(user);
+        verifyNumberFailedAttempts(user);
 
-        String rawPassword = accessRequest.getPassword();
         String encodedPassword = userService.getUserByEmail(accessRequest.getEmail()).getPassword();
-
         boolean passwordsEqual = comparePasswords(rawPassword, encodedPassword);
-
-        if (passwordsEqual) {
-            user.setStatus(Status.ACTIVE);
-            user.setFailedAttempts(0);
-            user.setFinishLocking(0);
-
-            String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
-            user.setSessionId(sessionId);
-            log.info("User {} has got sessionId={}", email, sessionId);
-            return SessionResponse.builder().sessionId(sessionId).build();
-        } else {
+        if (!passwordsEqual) {
             user.setFailedAttempts(user.getFailedAttempts() + 1);
             throw new AuthenticationException(String.format("Wrong password for user %s", email));
         }
+
+        user.setUserStatus(UserStatus.ACTIVE);
+        user.setFailedAttempts(0);
+        user.setFinishLocking(0);
+
+        String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
+        user.setSessionId(sessionId);
+        log.info("User {} has got sessionId={}", email, sessionId);
+
+        return SessionResponse.builder().sessionId(sessionId).build();
     }
 
     public User resetPassword(AccessRequest accessRequest) {
@@ -68,6 +65,7 @@ public class AuthService {
 
         user.setPassword(newPassword);
         userService.saveUser(user);
+
         return user;
     }
 
@@ -75,9 +73,9 @@ public class AuthService {
         return passwordEncoder.getPasswordEncoder().matches(rawPassword, encodedPassword);
     }
 
-    protected void checkLocked(User user) {
+    protected void verifyUserNotLocked(User user) {
         long currentTime = Instant.now().getEpochSecond();
-        if (user.getStatus().equals(Status.LOCKED)) {
+        if (user.getUserStatus().equals(UserStatus.LOCKED)) {
             if (user.getFinishLocking() > currentTime) {
                 throw new UserLockedException(String.format("User %s is still locked", user.getEmail()));
             } else {
@@ -86,10 +84,10 @@ public class AuthService {
         }
     }
 
-    protected void checkFailedAttempts(User user) {
+    protected void verifyNumberFailedAttempts(User user) {
         long timeToUnlock = Instant.now().getEpochSecond() + LOCK_TIME_SEC;
         if (user.getFailedAttempts() == MAX_FAILED_ATTEMPTS) {
-            user.setStatus(Status.LOCKED);
+            user.setUserStatus(UserStatus.LOCKED);
             user.setFinishLocking(timeToUnlock);
             throw new MaxAttemptsException(String.format("User %s used all attempts to login", user.getEmail()));
         }
@@ -103,7 +101,5 @@ public class AuthService {
                 .map(userDetails -> (SessionInformation) sessionRegistry.getAllSessions(userDetails, true))
                 .forEach(information -> information.expireNow());
     }
-
-
 
 }

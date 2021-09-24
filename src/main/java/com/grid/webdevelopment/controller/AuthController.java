@@ -17,28 +17,30 @@ import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 @RestController
-@RequestMapping("api/v1/")
+@RequestMapping("api/v1")
 @AllArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
     private final CartService cartService;
 
-    @PostMapping("login")
+    @PostMapping("/login")
     public ResponseEntity<SessionResponse> login(@RequestBody AccessRequest accessRequest) {
         return ResponseEntity.ok(authService.loginUser(accessRequest));
     }
 
-    @PostMapping("logout/{userId}")
+    @PostMapping("/logout/{userId}")
     @PreAuthorize("hasAuthority('users:read')")
-    public ResponseEntity<?> logout(@PathVariable String userId, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> logout(@PathVariable String userId,
+                                    HttpServletRequest request,
+                                    HttpServletResponse response) {
         cartService.returnAllProductsToShop(userId);
         SecurityContextLogoutHandler handler = new SecurityContextLogoutHandler();
         handler.logout(request, response, null);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("reset")
+    @PostMapping("/reset")
     public ResponseEntity<User> reset(@RequestBody AccessRequest accessRequest) {
         return ResponseEntity.ok(authService.resetPassword(accessRequest));
     }

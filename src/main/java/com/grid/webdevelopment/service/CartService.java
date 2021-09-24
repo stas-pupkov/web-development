@@ -41,6 +41,45 @@ public class CartService {
         return cartItemsRepository.get(userId);
     }
 
+    public Map<String, Integer> deleteFromCart(String userId, CartItem cartItem) {
+        String productId = cartItem.getId();
+        int quantity = cartItem.getQuantity();
+
+        if (!productExistsInCart(userId, productId)) {
+            throw new ProductNotFoundException(String.format("Product with id=%s not found in cart", productId));
+        }
+        removeProductFromCart(userId, productId, quantity);
+        addProductToShop(productId, quantity);
+
+        return cartItemsRepository.get(userId);
+    }
+
+    public Map<String, Integer> modifyItemInCart(String userId, CartItem cartItem) {
+        String productId = cartItem.getId();
+        int quantity = cartItem.getQuantity();
+
+        if (!productExistsInCart(userId, productId)) {
+            throw new ProductNotFoundException(String.format("Product with id=%s not found in cart", productId));
+        }
+        removeProductFromShop(productId, quantity);
+        addProductToCart(userId, productId, quantity);
+
+        return cartItemsRepository.get(userId);
+    }
+
+    public List<CartView> displayItemsInCart(String userId) {
+        List<String> ids = getUserItems(userId).keySet().stream().collect(Collectors.toList());
+        return IntStream.range(0, ids.size())
+                .mapToObj(i -> createCartView(userId, i + 1, ids.get(i)))
+                .collect(Collectors.toList());
+    }
+
+    public Set<Cart> showOrders(String userId) {
+        return userService.getUserById(userId).getOrders().stream()
+                .map(id -> cartOrderRepository.getOrders().get(id))
+                .collect(Collectors.toSet());
+    }
+
     protected void removeProductFromShop(String productId, int quantity) {
         Product product = productService.getProductById(productId);
         int diff = product.getAvailable() - quantity;
@@ -57,19 +96,6 @@ public class CartService {
         int productsInCart = items.containsKey(productId) ? items.get(productId) : 0;
         cartItemsRepository.save(userId, productId, productsInCart + quantity);
         log.info("ProductId={} has been updated in cartId={} in amount of {} pieces", userId, productId, quantity);
-    }
-
-    public Map<String, Integer> deleteFromCart(String userId, CartItem cartItem) {
-        String productId = cartItem.getId();
-        int quantity = cartItem.getQuantity();
-
-        if (!productExistsInCart(userId, productId)) {
-            throw new ProductNotFoundException(String.format("Product with id=%s not found in cart", productId));
-        }
-        removeProductFromCart(userId, productId, quantity);
-        addProductToShop(productId, quantity);
-
-        return cartItemsRepository.get(userId);
     }
 
     protected void removeProductFromCart(String userId, String productId, int quantity) {
@@ -96,26 +122,6 @@ public class CartService {
         product.setAvailable(diff);
         productService.saveProduct(product);
         log.info("{} has been updated on {} pieces", product, quantity);
-    }
-
-    public Map<String, Integer> modifyItemInCart(String userId, CartItem cartItem) {
-        String productId = cartItem.getId();
-        int quantity = cartItem.getQuantity();
-
-        if (!productExistsInCart(userId, productId)) {
-            throw new ProductNotFoundException(String.format("Product with id=%s not found in cart", productId));
-        }
-        removeProductFromShop(productId, quantity);
-        addProductToCart(userId, productId, quantity);
-
-        return cartItemsRepository.get(userId);
-    }
-
-    public List<CartView> displayItemsInCart(String userId) {
-        List<String> ids = getUserItems(userId).keySet().stream().collect(Collectors.toList());
-        return IntStream.range(0, ids.size())
-                .mapToObj(i -> createCartView(userId, i + 1, ids.get(i)))
-                .collect(Collectors.toList());
     }
 
     private CartView createCartView(String userId, int orderNumber, String productId) {
@@ -170,46 +176,5 @@ public class CartService {
                 .status(Cart.OrderStatus.PROGRESS)
                 .build();
     }
-
-    public Set<Cart> showOrders(String userId) {
-        return userService.getUserById(userId).getOrders().stream()
-                .map(id -> cartOrderRepository.getOrders().get(id))
-                .collect(Collectors.toSet());
-    }
-
-
-
-//    protected void updateCart(String userId, String productId, int quantity) {
-//        boolean buy = quantity >= 0;
-//        Map<String, Integer> item = updateItem(userId, productId, Math.abs(quantity), buy);
-//        cartItemsRepository.save(userId, item);
-//        log.info("ProductId={} has been updated in cartId={} in amount of {} pieces", userId, productId, quantity);
-//    }
-//
-//    protected Map<String, Integer> updateItem(String userId, String productId, int quantity, boolean buy) {
-//        Map<String, Integer> items = cartItemsRepository.getItems(userId);
-//        int productsInCart = items.containsKey(productId) ? items.get(productId) : 0;
-//        int diff = productsInCart + quantity;
-//        if (!buy) {
-//            diff = productsInCart - quantity;
-//            if (diff < 0) {
-//                throw new BigQuantityException(String.format("Available quantity in cart is %s, but requested %s", productsInCart, quantity));
-//            }
-//        }
-//        items.put(productId, diff);
-//        return items;
-//    }
-//
-//    protected void updateProduct(String productId, int quantity) {
-//        Product product = productService.getProductById(productId);
-//        int diff = product.getAvailable() - quantity;
-//        if (quantity > 0 && diff < 0) {
-//            throw new BigQuantityException(String.format("Available quantity in shop is %s, but requested %s", product.getAvailable(), quantity));
-//        }
-//        product.setAvailable(diff);
-//        productService.saveProduct(product);
-//        log.info("{} has been updated on {} pieces", product, quantity);
-
-//    }
 
 }

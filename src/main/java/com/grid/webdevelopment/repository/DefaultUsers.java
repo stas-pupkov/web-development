@@ -1,15 +1,13 @@
 package com.grid.webdevelopment.repository;
 
-import com.grid.webdevelopment.model.Cart;
-import com.grid.webdevelopment.model.Role;
-import com.grid.webdevelopment.model.Status;
+import com.grid.webdevelopment.security.Role;
 import com.grid.webdevelopment.model.User;
+import com.grid.webdevelopment.model.UserStatus;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,7 +40,7 @@ public class DefaultUsers {
                 .email(adminEmail)
                 .password(adminPassword)
                 .role(Role.ADMIN)
-                .status(Status.ACTIVE)
+                .userStatus(UserStatus.ACTIVE)
                 .orders(new HashSet<>())
                 .build();
     }

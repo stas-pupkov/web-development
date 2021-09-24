@@ -1,6 +1,6 @@
 package com.grid.webdevelopment.model;
 
-public enum Status {
+public enum UserStatus {
 
     ACTIVE,
     LOGGING,

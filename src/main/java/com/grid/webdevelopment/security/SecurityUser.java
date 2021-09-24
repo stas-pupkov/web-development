@@ -1,6 +1,6 @@
 package com.grid.webdevelopment.security;
 
-import com.grid.webdevelopment.model.Status;
+import com.grid.webdevelopment.model.UserStatus;
 import com.grid.webdevelopment.model.User;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -64,10 +64,10 @@ public class SecurityUser implements UserDetails {
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
-                user.getStatus().equals(Status.ACTIVE),
-                user.getStatus().equals(Status.ACTIVE),
-                user.getStatus().equals(Status.ACTIVE),
-                user.getStatus().equals(Status.ACTIVE),
+                user.getUserStatus().equals(UserStatus.ACTIVE),
+                user.getUserStatus().equals(UserStatus.ACTIVE),
+                user.getUserStatus().equals(UserStatus.ACTIVE),
+                user.getUserStatus().equals(UserStatus.ACTIVE),
                 user.getRole().getAuthorities()
         );
     }
