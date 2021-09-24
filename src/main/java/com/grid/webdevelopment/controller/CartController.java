@@ -1,5 +1,6 @@
 package com.grid.webdevelopment.controller;
 
+import com.grid.webdevelopment.model.Cart;
 import com.grid.webdevelopment.model.CartItem;
 import com.grid.webdevelopment.model.CartView;
 import com.grid.webdevelopment.service.CartService;
@@ -38,6 +39,11 @@ public class CartController {
     public ResponseEntity<Map<String, Integer>> modify(@PathVariable String userId,
                                                        @RequestBody CartItem cartItem) {
         return ResponseEntity.ok(cartService.modifyItemInCart(userId, cartItem));
+    }
+
+    @PostMapping("checkout/{userId}")
+    public ResponseEntity<Cart> checkout(@PathVariable String userId) {
+        return ResponseEntity.ok(cartService.checkout(userId));
     }
 
 }

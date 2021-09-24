@@ -1,19 +1,22 @@
 package com.grid.webdevelopment.model;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.context.annotation.Scope;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.annotation.SessionScope;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
 public class Cart {
 
-    private Map<String, Integer> items = new HashMap<>();
+    private String orderId;
+    private LocalDateTime date;
+    private Double total;
+    private OrderStatus status;
 
+    public enum OrderStatus {
+        PROGRESS,
+        CANCELED;
+    }
 }
