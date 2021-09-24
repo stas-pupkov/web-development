@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/cart/")
@@ -44,6 +45,11 @@ public class CartController {
     @PostMapping("checkout/{userId}")
     public ResponseEntity<Cart> checkout(@PathVariable String userId) {
         return ResponseEntity.ok(cartService.checkout(userId));
+    }
+
+    @GetMapping("orders/{userId}")
+    public ResponseEntity<Set<Cart>> showOrders(@PathVariable String userId) {
+        return ResponseEntity.ok(cartService.showOrders(userId));
     }
 
 }

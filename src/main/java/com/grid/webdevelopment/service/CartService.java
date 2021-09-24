@@ -1,6 +1,7 @@
 package com.grid.webdevelopment.service;
 
 import com.grid.webdevelopment.exception.BigQuantityException;
+import com.grid.webdevelopment.exception.CartIsEmptyException;
 import com.grid.webdevelopment.exception.ProductAddedAlreadyException;
 import com.grid.webdevelopment.exception.ProductNotFoundException;
 import com.grid.webdevelopment.model.Cart;
@@ -8,6 +9,7 @@ import com.grid.webdevelopment.model.CartItem;
 import com.grid.webdevelopment.model.CartView;
 import com.grid.webdevelopment.model.Product;
 import com.grid.webdevelopment.repository.CartItemsRepository;
+import com.grid.webdevelopment.repository.CartOrderRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ public class CartService {
     private final ProductService productService;
     private final UserService userService;
     private final CartItemsRepository cartItemsRepository;
+    private final CartOrderRepository cartOrderRepository;
 
     public Map<String, Integer> addToCart(String userId, CartItem cartItem) {
         String productId = cartItem.getId();
@@ -144,19 +147,34 @@ public class CartService {
     }
 
     public Cart checkout(String userId) {
-        List<String> ids = getUserItems(userId).keySet().stream().collect(Collectors.toList());
+        Map<String, Integer> items = getUserItems(userId);
+        List<String> ids = items.keySet().stream().collect(Collectors.toList());
+        if (ids.size() == 0) {
+            throw new CartIsEmptyException("Your cart is empty");
+        }
         double total = ids.stream()
-                .mapToDouble(productId -> getUserItems(userId).get(productId) * productService.getProductById(productId).getPrice())
+                .mapToDouble(productId -> items.get(productId) * productService.getProductById(productId).getPrice())
                 .sum();
-
-        Cart cart = userService.getUserById(userId).getCart();
-        cart.setOrderId(UUID.randomUUID().toString());
-        cart.setDate(LocalDateTime.now());
-        cart.setTotal(total);
-        cart.setStatus(Cart.OrderStatus.PROGRESS);
-        userService.getUserById(userId).setCart(cart);
+        Cart cart = createCartOrder(total);
+        userService.getUserById(userId).getOrders().add(cart.getOrderId());
+        cartOrderRepository.saveOrder(cart);
         cartItemsRepository.getItems().put(userId, new HashMap<>());
         return cart;
+    }
+
+    protected Cart createCartOrder(Double total) {
+        return Cart.builder()
+                .orderId(UUID.randomUUID().toString())
+                .date(LocalDateTime.now())
+                .total(total)
+                .status(Cart.OrderStatus.PROGRESS)
+                .build();
+    }
+
+    public Set<Cart> showOrders(String userId) {
+        return userService.getUserById(userId).getOrders().stream()
+                .map(id -> cartOrderRepository.getOrders().get(id))
+                .collect(Collectors.toSet());
     }
 
 

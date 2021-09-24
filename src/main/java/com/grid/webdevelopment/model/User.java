@@ -8,6 +8,7 @@ import org.springframework.web.context.annotation.SessionScope;
 
 import javax.validation.constraints.NotEmpty;
 import java.util.Map;
+import java.util.Set;
 
 @Data
 @Builder
@@ -23,6 +24,6 @@ public class User {
     private Role role;
     private int failedAttempts;
     private long finishLocking;
-    private Cart cart;
+    private Set<String> orders;
 
 }

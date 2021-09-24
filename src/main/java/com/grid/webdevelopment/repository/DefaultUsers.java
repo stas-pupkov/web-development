@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,7 +43,7 @@ public class DefaultUsers {
                 .password(adminPassword)
                 .role(Role.ADMIN)
                 .status(Status.ACTIVE)
-                .cart(new Cart())
+                .orders(new HashSet<>())
                 .build();
     }
 
